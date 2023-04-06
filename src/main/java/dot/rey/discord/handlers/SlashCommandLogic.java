@@ -1,6 +1,9 @@
 package dot.rey.discord.handlers;
 
+import dot.rey.repository.BanRepository;
 import dot.rey.repository.ChannelUsersRepository;
+import dot.rey.repository.GuildMetaRepository;
+import dot.rey.table.BanTable;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -17,9 +20,12 @@ import static dot.rey.discord.Utils.textChannelUserPermission;
 public class SlashCommandLogic extends ListenerAdapter {
 
     @Autowired
+    private BanRepository banRepository;
+    @Autowired
+    private GuildMetaRepository metaRepository;
+    @Autowired
     private ChannelUsersRepository channelUsersRepository;
     final static Logger logger = LoggerFactory.getLogger(SlashCommandLogic.class);
-
 
 
     @Override
@@ -61,13 +67,13 @@ public class SlashCommandLogic extends ListenerAdapter {
     }
 
     private void banUserInTextChannel(TextChannel newChannel, Member member) {
-        channelUsersRepository.updateBanned(newChannel.getIdLong(), member.getIdLong(), true);
-        channelUsersRepository.updateModerator(newChannel.getIdLong(), member.getIdLong(), false);
         retiredChannelUser(newChannel, member);
+        banRepository.save(new BanTable(newChannel.getIdLong(), member.getIdLong(), metaRepository.findByGuildId(newChannel.getGuild().getIdLong())));
+        channelUsersRepository.deleteByUserIdAndChannelId(member.getIdLong(), newChannel.getIdLong());
     }
 
     private void forgiveUser(TextChannel channel, Member member) {
-        channelUsersRepository.updateBanned(channel.getIdLong(), member.getIdLong(), false);
+        banRepository.deleteByChannelIdAndUserId(channel.getIdLong(), member.getIdLong());
     }
 
     private void retiredChannelUser(TextChannel newChannel, Member member) {
@@ -75,9 +81,6 @@ public class SlashCommandLogic extends ListenerAdapter {
                 .upsertPermissionOverride(member)
                 .setPermissions(null, textChannelUserPermission).queue();
         logger.info("Retired view to user {} for channel {}", member, newChannel);
-        if (!channelUsersRepository.isBanned(newChannel.getIdLong(), member.getIdLong()).orElse(false)) {
-            channelUsersRepository.deleteByUserIdAndChannelId(member.getIdLong(), newChannel.getIdLong());
-            logger.debug("User {} entre delete from DB for channel {}", member, newChannel);
-        } else logger.info("Skip database deletion - User {} is banned in channel {}", member, newChannel);
+        channelUsersRepository.deleteByUserIdAndChannelId(member.getIdLong(), newChannel.getIdLong());
     }
 }

@@ -21,6 +21,9 @@ public class GuildMetaTable {
     @OneToMany(mappedBy = "guildMetaTable", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChannelUsersTable> channels = new ArrayList<>();
 
+    @OneToMany(mappedBy = "guildMetaTable", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BanTable> bans = new ArrayList<>();
+
     public Long getGuildId() {
         return guildId;
     }

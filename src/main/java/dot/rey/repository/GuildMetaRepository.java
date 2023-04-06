@@ -19,4 +19,6 @@ public interface GuildMetaRepository extends JpaRepository<GuildMetaTable, Long>
 
     @Query("SELECT s.tr21ChannelId from GuildMetaTable s where s.guildId =?1")
     Long getBanChannelId(Long guildId);
+
+    GuildMetaTable findByGuildId(Long guildId);
 }

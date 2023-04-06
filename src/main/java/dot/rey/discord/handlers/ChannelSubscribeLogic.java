@@ -1,5 +1,6 @@
 package dot.rey.discord.handlers;
 
+import dot.rey.repository.BanRepository;
 import dot.rey.repository.ChannelUsersRepository;
 import dot.rey.repository.GuildMetaRepository;
 import dot.rey.table.ChannelUsersTable;
@@ -10,6 +11,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,8 @@ public class ChannelSubscribeLogic extends ListenerAdapter {
     @Autowired
     private GuildMetaRepository metaRepository;
     @Autowired
+    private BanRepository banRepository;
+    @Autowired
     private ChannelUsersRepository channelUsersRepository;
 
     @Override
@@ -44,11 +48,11 @@ public class ChannelSubscribeLogic extends ListenerAdapter {
     }
 
     @Override
-    public void onGenericMessageReaction(GenericMessageReactionEvent event) {
-        if (event instanceof MessageReactionAddEvent && event.getMember().getIdLong() != (event.getJDA().getSelfUser().getIdLong())) {
+    public void onGenericMessageReaction(@NotNull GenericMessageReactionEvent event) {
+        if (event instanceof MessageReactionAddEvent && Objects.requireNonNull(event.getMember()).getIdLong() != (event.getJDA().getSelfUser().getIdLong())) {
             if (event.getReaction().getEmoji().getAsReactionCode().equals(YES_REACTION)) {
                 var channel = event.retrieveMessage().complete().getMentions().getChannels().get(0);
-                if (!channelUsersRepository.isBanned(channel.getIdLong(), event.getUserIdLong()).orElse(false)) {
+                if (!banRepository.existsByChannelIdAndUserId(channel.getIdLong(), event.getUserIdLong())) {
                     setUpChannelUser((TextChannel) channel, event.getMember());
                 }
             } else if (event.getReaction().getEmoji().getAsReactionCode().equals(NO_REACTION)) {
@@ -82,9 +86,6 @@ public class ChannelSubscribeLogic extends ListenerAdapter {
                 .upsertPermissionOverride(member)
                 .setPermissions(null, textChannelUserPermission).queue();
         logger.info("Retired view to user {} for channel {}", member, newChannel);
-        if (!channelUsersRepository.isBanned(newChannel.getIdLong(), member.getIdLong()).orElse(false)) {
-            channelUsersRepository.deleteByUserIdAndChannelId(member.getIdLong(), newChannel.getIdLong());
-            logger.debug("User {} entre delete from DB for channel {}", member, newChannel);
-        } else logger.info("Skip database deletion - User {} is banned in channel {}", member, newChannel);
+        channelUsersRepository.deleteByUserIdAndChannelId(member.getIdLong(), newChannel.getIdLong());
     }
 }

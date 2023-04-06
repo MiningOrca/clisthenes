@@ -20,9 +20,6 @@ public class ChannelUsersTable {
     @Column(name = "is_moderator")
     private boolean isModerator = false;
 
-    @Column(name = "is_banned")
-    private boolean isBanned = false;
-
     @Column(name = "is_Owner")
     private boolean isOwner = false;
 
@@ -52,14 +49,6 @@ public class ChannelUsersTable {
 
     public void setModerator(boolean moderator) {
         isModerator = moderator;
-    }
-
-    public boolean isBanned() {
-        return isBanned;
-    }
-
-    public void setBanned(boolean banned) {
-        isBanned = banned;
     }
 
     public boolean isOwner() {
