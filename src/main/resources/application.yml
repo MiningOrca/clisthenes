@@ -1,10 +1,18 @@
 spring:
   jpa:
+    generate-ddl: true
+
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         enable_lazy_load_no_trans: true
-        show_sql: true
-#  datasource:
-#    url: jdbc:postgresql://127.0.0.1:5432/compose-postgres
-#    username: compose-postgres
-#    password: compose-postgres
+        show_sql: false
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+
+    url: jdbc:postgresql://localhost:5432/compose-postgres
+    username: compose-postgres
+    password: compose-postgres
