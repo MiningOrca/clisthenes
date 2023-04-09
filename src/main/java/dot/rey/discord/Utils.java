@@ -17,7 +17,7 @@ public class Utils {
     public static EnumSet<Permission> textChannelAdminPermission = initTextAdminPermission();
 
     public static EnumSet<Permission> textChannelModeratorPermission = initTextModeratorPermission();
-    public static String helpText= """
+    public static String helpText = """
             For now 3 commands:
              ban<@user_id><#channel_id> - to 'ban' user in channel
              forgive<@user_id><#channel_id> - to 'unban' user in channel
@@ -55,5 +55,26 @@ public class Utils {
         perm.add(MANAGE_CHANNEL);
         perm.add(VIEW_CHANNEL);
         return perm;
+    }
+
+    public enum Privilege {
+        UNBANNED(0), BAN(-1), USER(1), MODERATOR(8), CHOSEN_ADMIN(9), OWNER(10);
+        final int offset;
+
+        public int getOffset() {
+            return offset;
+        }
+
+        Privilege(int offset) {
+            this.offset = offset;
+        }
+
+        public static Privilege getFromOffset(int offset) {
+            for (Privilege perm : values()) {
+                if (perm.offset == offset)
+                    return perm;
+            }
+            return UNBANNED; //this should never happens
+        }
     }
 }

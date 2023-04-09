@@ -1,5 +1,6 @@
 package dot.rey.discord.handlers;
 
+import dot.rey.discord.Utils;
 import dot.rey.repository.ChannelUsersRepository;
 import dot.rey.repository.GuildMetaRepository;
 import dot.rey.table.ChannelUsersTable;
@@ -41,9 +42,15 @@ public class ChannelCreationLogic extends ListenerAdapter {
     private void buildNewChannel(MessageReceivedEvent event) {
         logger.info("Building new channel");
         var splitMsg = event.getMessage().getContentRaw().split("\n");
-        if (splitMsg.length < 2) {
+        if (splitMsg.length <= 2) {
             logger.info("Malformed message, need at least one \\n  " + event.getMessage().getContentRaw());
             event.getChannel().sendMessage(event.getAuthor().getAsMention() + " please use '\\n' as setup").queue();
+            return;
+        } else if (splitMsg[0].contains("<#")) {
+            logger.info("Malformed message, should not hava channel mentioned  " + event.getMessage().getContentRaw());
+            event.getChannel().sendMessage(event.getAuthor().getAsMention() + " please do not use another channel mentions as channel name, moron").queue();
+            return;
+
         }
         var channelName = splitMsg[0];
         var newChannel = createNewChannel(channelName, event);
@@ -55,8 +62,7 @@ public class ChannelCreationLogic extends ListenerAdapter {
         var channel = new ChannelUsersTable();
         channel.setChannelId(channelId);
         channel.setUserId(event.getAuthor().getIdLong());
-        channel.setModerator(true);
-        channel.setOwner(true);
+        channel.setPrivilege(Utils.Privilege.OWNER.getOffset());
         channel.setGuildMetaTable(metaRepository.findById(event.getGuild().getIdLong()).orElseThrow(() -> new NoSuchElementException("Can't found proper guild in database")));
         channelUsersRepository.save(channel);
     }

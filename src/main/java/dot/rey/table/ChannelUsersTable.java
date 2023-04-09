@@ -17,11 +17,8 @@ public class ChannelUsersTable {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "is_moderator")
-    private boolean isModerator = false;
-
-    @Column(name = "is_Owner")
-    private boolean isOwner = false;
+    @Column(name = "privilege")
+    private Integer privilege = 0;
 
     @ManyToOne
     @JoinColumn(name = "guild_id", nullable = false)
@@ -43,20 +40,12 @@ public class ChannelUsersTable {
         this.userId = userId;
     }
 
-    public boolean isModerator() {
-        return isModerator;
+    public Integer getPrivilege() {
+        return privilege;
     }
 
-    public void setModerator(boolean moderator) {
-        isModerator = moderator;
-    }
-
-    public boolean isOwner() {
-        return isOwner;
-    }
-
-    public void setOwner(boolean owner) {
-        isOwner = owner;
+    public void setPrivilege(Integer moderator) {
+        privilege = moderator;
     }
 
     public GuildMetaTable getGuildMetaTable() {
