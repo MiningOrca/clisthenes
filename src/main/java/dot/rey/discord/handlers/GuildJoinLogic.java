@@ -4,10 +4,14 @@ import dot.rey.discord.Utils;
 import dot.rey.repository.GuildMetaRepository;
 import dot.rey.table.GuildMetaTable;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.events.guild.GenericGuildEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -27,9 +31,19 @@ public class GuildJoinLogic extends ListenerAdapter {
         this.guildMetaRepository = guildMetaRepository;
     }
 
+
+    @Override
+    public void onGuildReady(@NotNull GuildReadyEvent event) {
+        setupGuild(event);
+    }
+
     @Override
     public void onGuildJoin(GuildJoinEvent event) {
         logger.info("Joined to guild " + event.getGuild());
+        setupGuild(event);
+    }
+
+    private void setupGuild(GenericGuildEvent event) {
         if (!guildMetaRepository.existsById(event.getGuild().getIdLong())) {
             logger.info("Can't find guild in database");
             setupSystemChannel(event);
@@ -62,11 +76,14 @@ public class GuildJoinLogic extends ListenerAdapter {
                         .addOption(OptionType.USER, "name", "username", true)
                         .setDefaultPermissions(enabledFor(Permission.MANAGE_CHANNEL)),
                 Commands.slash("leave_channel", "simply unsubscribe from channel")
+                        .setDefaultPermissions(enabledFor(Permission.VIEW_CHANNEL)),
+                Commands.slash("spy_user", "copy user subscription")
+                        .addOption(OptionType.USER, "name", "username", true)
                         .setDefaultPermissions(enabledFor(Permission.VIEW_CHANNEL))
         ).queue();
     }
 
-    private void setupBanChannel(GuildJoinEvent event) {
+    private void setupBanChannel(GenericGuildEvent event) {
         var channel = event.getGuild().createTextChannel(Utils.centralBanChannelName)
                 .addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
                 .complete();
@@ -74,7 +91,7 @@ public class GuildJoinLogic extends ListenerAdapter {
         guildMetaRepository.updateBanChannel(event.getGuild().getIdLong(), channel.getIdLong());
     }
 
-    private void setupSystemChannel(GuildJoinEvent event) {
+    private void setupSystemChannel(GenericGuildEvent event) {
         var channel = event.getGuild().createTextChannel(Utils.systemChannelName).complete();
         logger.info("Created system channel " + channel);
         var guildMeta = new GuildMetaTable();

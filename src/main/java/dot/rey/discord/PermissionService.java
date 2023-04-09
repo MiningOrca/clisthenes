@@ -6,6 +6,7 @@ import dot.rey.repository.GuildMetaRepository;
 import dot.rey.table.ChannelUsersTable;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
@@ -15,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static dot.rey.discord.Utils.Privilege.*;
 import static dot.rey.discord.Utils.textChannelModeratorPermission;
@@ -87,5 +91,16 @@ public class PermissionService {
                 .upsertPermissionOverride(member)
                 .setPermissions(null, textChannelUserPermission).queue();
         channelUsersRepository.deleteByUserIdAndChannelId(member.getIdLong(), newChannel.getIdLong());
+    }
+
+    public void copyUserSubscriptions(Member recipient, Member donor) {
+        channelUsersRepository
+                .findAllByGuildMetaTable_GuildIdAndUserId(donor.getGuild().getIdLong(), donor.getIdLong()).stream()
+                //we do not care about performance, can't be more than 1k channels
+                .filter(c -> c.getPrivilege() != BAN.offset || c.getPrivilege() != UNBANNED.offset)
+                .map(ChannelUsersTable::getChannelId)
+                //but in other case this can take a lot of time, and I'm not sure how will it work from discord side
+                .forEach(id -> setBasePermitsToUser(recipient.getGuild().getGuildChannelById(id), recipient));
+
     }
 }
