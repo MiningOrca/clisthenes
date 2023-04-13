@@ -11,8 +11,8 @@ public class ChannelUsersTable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @Column(name = "channel_id", nullable = false)
-    private Long channelId;
+//    @Column(name = "channel_id", nullable = false)
+//    private Long channelId;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
@@ -24,12 +24,24 @@ public class ChannelUsersTable {
     @JoinColumn(name = "guild_id", nullable = false)
     private GuildMetaTable guildMetaTable;
 
+    @ManyToOne
+    @JoinColumn(name = "channel_id", nullable = false)
+    private ChannelsTable channelsTable;
+
     public Long getChannelId() {
-        return channelId;
+        return channelsTable.getChannelId();
+    }
+
+    public ChannelsTable getUserChannelsTable() {
+        return channelsTable;
+    }
+
+    public void setUserChannelsTable(ChannelsTable channelsTable) {
+        this.channelsTable = channelsTable;
     }
 
     public void setChannelId(Long channelId) {
-        this.channelId = channelId;
+        channelsTable.setChannelId(channelId);
     }
 
     public Long getUserId() {

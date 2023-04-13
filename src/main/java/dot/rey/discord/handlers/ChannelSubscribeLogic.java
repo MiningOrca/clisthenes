@@ -37,7 +37,7 @@ public class ChannelSubscribeLogic extends ListenerAdapter {
         var mentionedChannels = event.getMessage().getMentions().getChannels();
         if (!mentionedChannels.isEmpty()) {
             logger.info("Found channel mention in message with id" + event.getMessageId());
-            if (channelUsersRepository.existsByChannelId(mentionedChannels.get(0).getIdLong())
+            if (channelUsersRepository.existsByChannelsTable_ChannelId(mentionedChannels.get(0).getIdLong())
                     && event.getChannel().getIdLong() != metaRepository.getBanChannelId(event.getGuild().getIdLong())) {
                 addReactionsOnChannelMessages(event.getMessage());
             }
@@ -49,7 +49,7 @@ public class ChannelSubscribeLogic extends ListenerAdapter {
         if (event instanceof MessageReactionAddEvent && Objects.requireNonNull(event.getMember()).getIdLong() != (event.getJDA().getSelfUser().getIdLong())) {
             if (event.getReaction().getEmoji().getAsReactionCode().equals(YES_REACTION)) {
                 var channel = event.retrieveMessage().complete().getMentions().getChannels().get(0);
-                if (!channelUsersRepository.existsByUserIdAndChannelId(event.getUserIdLong(), channel.getIdLong())) {
+                if (!channelUsersRepository.existsByUserIdAndChannelsTable_ChannelId(event.getUserIdLong(), channel.getIdLong())) {
                     permissionService.setBasePermitsToUser(channel, event.getMember());
                 }
             } else if (event.getReaction().getEmoji().getAsReactionCode().equals(NO_REACTION)) {

@@ -12,13 +12,13 @@ import java.util.Optional;
 public interface ChannelUsersRepository extends JpaRepository<ChannelUsersTable, Long> {
     @Transactional
     @Modifying
-    void deleteByUserIdAndChannelId(long userId, long channelId);
+    void deleteByUserIdAndChannelsTable_ChannelId(long userId, long channelId);
 
-    Boolean existsByChannelId(long channelId);
+    Boolean existsByChannelsTable_ChannelId(long channelId);
 
-    Optional<ChannelUsersTable> findByUserIdAndChannelId(Long userId, Long channelId);
+    Optional<ChannelUsersTable> findByUserIdAndChannelsTable_ChannelId(Long userId, Long channelId);
 
-    Boolean existsByUserIdAndChannelId(Long userId, Long channelId);
+    Boolean existsByUserIdAndChannelsTable_ChannelId(Long userId, Long channelId);
 
 
     List<ChannelUsersTable> findAllByGuildMetaTable_GuildIdAndUserId(Long guildMetaTable_guildId, Long userId);
@@ -27,6 +27,6 @@ public interface ChannelUsersRepository extends JpaRepository<ChannelUsersTable,
 
     @Transactional
     @Modifying
-    @Query("update ChannelUsersTable c set c.privilege = :newPrivilege WHERE c.userId = :userId and c.channelId=:channelId")
+    @Query("update ChannelUsersTable c set c.privilege = :newPrivilege WHERE c.userId = :userId and c.channelsTable.channelId=:channelId")
     void updatePrivilege(long channelId, long userId, int newPrivilege);
 }

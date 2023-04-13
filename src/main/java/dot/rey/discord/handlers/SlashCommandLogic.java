@@ -32,6 +32,11 @@ public class SlashCommandLogic extends ListenerAdapter {
                 logger.info("User {} copy {} subscriptions", event.getUser(), event.getOption("name").getAsMember());
                 permissionService.copyUserSubscriptions(event.getMember(), event.getOption("name").getAsMember());
             }
+            case "create_subchannel" -> {
+                permissionService.establishSubchannel(event, event.getOption("name").getAsString());
+            }
+            //todo add trusted owner mechanic
+            //todo add channel deletion for admin
             case "ban_user" -> {
                 logger.info("{} banned in channel {} by {}", event.getOption("name").getAsMember(), event.getChannel(), event.getMember());
                 permissionService.banChannelForMember(event.getChannel().asTextChannel(), event.getOption("name").getAsMember());

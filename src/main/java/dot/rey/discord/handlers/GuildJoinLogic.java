@@ -79,7 +79,10 @@ public class GuildJoinLogic extends ListenerAdapter {
                         .setDefaultPermissions(enabledFor(Permission.VIEW_CHANNEL)),
                 Commands.slash("spy_user", "copy user subscription")
                         .addOption(OptionType.USER, "name", "username", true)
-                        .setDefaultPermissions(enabledFor(Permission.VIEW_CHANNEL))
+                        .setDefaultPermissions(enabledFor(Permission.VIEW_CHANNEL)),
+                Commands.slash("create_subchannel", "establish a group of channels based on this one")
+                        .addOption(OptionType.STRING, "name", "new channel name", true)
+                        .setDefaultPermissions(enabledFor(Permission.MANAGE_CHANNEL))
         ).queue();
     }
 
