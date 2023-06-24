@@ -80,9 +80,11 @@ public class GuildJoinLogic extends ListenerAdapter {
                 Commands.slash("spy_user", "copy user subscription")
                         .addOption(OptionType.USER, "name", "username", true)
                         .setDefaultPermissions(enabledFor(Permission.VIEW_CHANNEL)),
-                Commands.slash("create_subchannel", "establish a group of channels based on this one")
-                        .addOption(OptionType.STRING, "name", "new channel name", true)
-                        .setDefaultPermissions(enabledFor(Permission.MANAGE_CHANNEL))
+//                Commands.slash("create_subchannel", "establish a group of channels based on this one")
+//                        .addOption(OptionType.STRING, "name", "new channel name", true)
+//                        .setDefaultPermissions(enabledFor(Permission.MANAGE_CHANNEL)),
+                Commands.slash("start_migration", "migrate all current guild channels as msg with join possibility")
+                        .setDefaultPermissions(enabledFor(Permission.ADMINISTRATOR))
         ).queue();
     }
 

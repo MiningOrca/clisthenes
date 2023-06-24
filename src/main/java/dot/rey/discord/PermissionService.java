@@ -10,6 +10,7 @@ import dot.rey.table.ChannelsTable;
 import dot.rey.table.GuildMetaTable;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
@@ -137,18 +138,22 @@ public class PermissionService {
 
 
     public void saveNewChannelInDB(MessageReceivedEvent event, long channelId) {
-        logger.info("Create database entries");
-        GuildMetaTable guildMetaTable = metaRepository.findById(event.getGuild().getIdLong()).orElseThrow(() -> new NoSuchElementException("Can't found proper guild in database"));
+        insertToDB(event.getGuild().getIdLong(), event.getAuthor().getIdLong(), channelId);
+    }
+
+    private void insertToDB(long guildId, long authorId, long channelId) {
+        logger.info("Create database entries for channel {}", channelId);
+        GuildMetaTable guildMetaTable = metaRepository.findById(guildId).orElseThrow(() -> new NoSuchElementException("Can't found proper guild in database"));
         var userChannel = new ChannelsTable();
         userChannel.setGuildMetaTable(guildMetaTable);
         userChannel.setChannelId(channelId);
-        userChannel.setOwnerId(event.getAuthor().getIdLong());
+        userChannel.setOwnerId(authorId);
         userChannel = userChannelRepository.save(userChannel);
 
         var channel = new ChannelUsersTable();
         channel.setUserChannelsTable(userChannel);
-        channel.setUserId(event.getAuthor().getIdLong());
-        channel.setPrivilege(Utils.Privilege.OWNER.getOffset());
+        channel.setUserId(authorId);
+        channel.setPrivilege(Privilege.OWNER.getOffset());
         channel.setGuildMetaTable(guildMetaTable);
         channelUsersRepository.save(channel);
     }
@@ -170,10 +175,22 @@ public class PermissionService {
         userChannel.setParentChannelId(event.getChannel().getIdLong());
         userChannelRepository.save(userChannel);
 
-
         event.getChannel().sendMessage("@everyone Established subchannel " +
                 "<#" + newChannel.getIdLong() + "> for this channel. " +
                 "Please press yes as reaction for this message.").queue();
+    }
 
+    public void migrateMainChannel(SlashCommandInteractionEvent event) {
+        var guild = event.getGuild();
+        var channel = event.getChannel();
+        Objects.requireNonNull(guild).getChannels()
+                .stream().filter(c -> c.getType() == ChannelType.TEXT)
+                .forEach(c -> {
+                    insertToDB(guild.getIdLong(), 0L, c.getIdLong());
+                    channel.sendMessage("Subscribe to ".concat(c.getName()).concat("\n").concat(c.getAsMention())).queue();
+                });
+        GuildMetaTable guildMetaTable = metaRepository.findById(guild.getIdLong()).orElseThrow(() -> new NoSuchElementException("Can't found proper guild in database"));
+        guildMetaTable.setSystemChannelId(channel.getIdLong());
+        metaRepository.save(guildMetaTable);
     }
 }

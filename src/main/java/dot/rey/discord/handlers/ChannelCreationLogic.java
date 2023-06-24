@@ -9,6 +9,7 @@ import dot.rey.table.ChannelUsersTable;
 import dot.rey.table.GuildMetaTable;
 import dot.rey.table.ChannelsTable;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -40,6 +41,7 @@ public class ChannelCreationLogic extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
+        if (event.getChannel().getType() == ChannelType.GUILD_PUBLIC_THREAD) return;
         if (metaRepository.existsBySystemChannelId(event.getChannel().getIdLong()) && event.getAuthor() != event.getJDA().getSelfUser()) {
             logger.info("Event create new channel triggered by " + event.getAuthor() + " for guild " + event.getGuild());
             buildNewChannel(event);
@@ -74,7 +76,7 @@ public class ChannelCreationLogic extends ListenerAdapter {
 
     private void replaceInitMessage(MessageReceivedEvent event, TextChannel newChannel) {
         var message = MessageCreateBuilder.fromMessage(event.getMessage())
-                .setContent(event.getMessage().getContentRaw().replaceFirst(newChannel.getName(), newChannel.getAsMention())).build();
+                .setContent(event.getMessage().getContentRaw().concat("\n").concat(newChannel.getAsMention())).build();
         event.getMessage().delete().queue();
         event.getChannel().sendMessage(message).queue();
         logger.info("Replace init message");

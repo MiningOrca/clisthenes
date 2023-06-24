@@ -19,6 +19,8 @@ public class DiscordClient implements CommandLineRunner {
     private ChannelSubscribeLogic channelSubscribeLogic;
     @Autowired
     private SpecialChannelLogic specialChannelLogic;
+    @Autowired
+    private ChannelRenameLogic channelRenameLogic;
 
     public DiscordClient(ChannelCreationLogic channelCreationLogic) {
         this.channelCreationLogic = channelCreationLogic;
@@ -30,6 +32,6 @@ public class DiscordClient implements CommandLineRunner {
                 .createDefault("MTA5MzE0ODgyMTIyMTAyMzgwNQ.GlM-SE.Jr_4LvoOsq8sd3ykAzFgx0vii-laJl2YvH3ySU") //Mmmm hardcoded
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
                 .build();
-        jda.addEventListener(guildJoinLogic, slashCommandLogic, channelCreationLogic, channelSubscribeLogic, specialChannelLogic);
+        jda.addEventListener(guildJoinLogic, slashCommandLogic, channelCreationLogic, channelSubscribeLogic, specialChannelLogic, channelRenameLogic);
     }
 }
