@@ -1,13 +1,8 @@
 package dot.rey.discord.handlers;
 
 import dot.rey.discord.PermissionService;
-import dot.rey.discord.Utils;
-import dot.rey.repository.ChannelUsersRepository;
 import dot.rey.repository.GuildMetaRepository;
 import dot.rey.repository.UserChannelRepository;
-import dot.rey.table.ChannelUsersTable;
-import dot.rey.table.GuildMetaTable;
-import dot.rey.table.ChannelsTable;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -19,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
 import static dot.rey.discord.Utils.textChannelAdminPermission;

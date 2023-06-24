@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
-import static dot.rey.discord.Utils.Privilege.*;
+import static dot.rey.discord.Utils.Privilege.BAN;
 
 @Component
 public class SpecialChannelLogic extends ListenerAdapter {

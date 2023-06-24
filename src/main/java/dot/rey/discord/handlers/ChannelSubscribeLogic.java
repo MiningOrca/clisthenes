@@ -18,7 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-import static dot.rey.discord.Utils.*;
+import static dot.rey.discord.Utils.NO_REACTION;
+import static dot.rey.discord.Utils.YES_REACTION;
 import static net.dv8tion.jda.api.entities.emoji.Emoji.fromUnicode;
 
 @Component
