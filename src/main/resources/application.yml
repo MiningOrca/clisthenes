@@ -3,7 +3,7 @@ spring:
     generate-ddl: true
 
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -13,6 +13,6 @@ spring:
     driver-class-name: org.postgresql.Driver
 
 
-    url: jdbc:postgresql://localhost:5432/compose-postgres
-    username: compose-postgres
-    password: compose-postgres
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/compose-postgres}
+    username: ${SPRING_DATASOURCE_USERNAME:compose-postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:compose-postgres}

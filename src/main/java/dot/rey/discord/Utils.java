@@ -22,6 +22,7 @@ public class Utils {
              ban<@user_id><#channel_id> - to 'ban' user in channel
              forgive<@user_id><#channel_id> - to 'unban' user in channel
              getbans - to get list of all banned users
+             spyuser<@user_id> - to get list of all user channels 
             \s""";
     public static EnumSet<Permission> voiceChannelUserPermission = initVoiceUserPermission();
 
@@ -33,6 +34,7 @@ public class Utils {
 
     private static EnumSet<Permission> initTextModeratorPermission() {
         var perm = Permission.getPermissions(ALL_TEXT_PERMISSIONS);
+        perm.add(VIEW_CHANNEL);
         perm.add(MESSAGE_MANAGE);
         return perm;
     }

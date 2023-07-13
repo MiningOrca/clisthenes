@@ -1,8 +1,10 @@
 package dot.rey.discord.handlers;
 
 import dot.rey.discord.PermissionService;
+import dot.rey.discord.Utils;
 import dot.rey.repository.ChannelUsersRepository;
 import dot.rey.repository.GuildMetaRepository;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -20,6 +22,7 @@ import java.util.Objects;
 
 import static dot.rey.discord.Utils.NO_REACTION;
 import static dot.rey.discord.Utils.YES_REACTION;
+import static net.dv8tion.jda.api.audit.ActionType.BAN;
 import static net.dv8tion.jda.api.entities.emoji.Emoji.fromUnicode;
 
 @Component
@@ -50,7 +53,11 @@ public class ChannelSubscribeLogic extends ListenerAdapter {
         if (event instanceof MessageReactionAddEvent && Objects.requireNonNull(event.getMember()).getIdLong() != (event.getJDA().getSelfUser().getIdLong())) {
             if (event.getReaction().getEmoji().getAsReactionCode().equals(YES_REACTION)) {
                 var channel = event.retrieveMessage().complete().getMentions().getChannels().get(0);
-                if (!channelUsersRepository.existsByUserIdAndChannelsTable_ChannelId(event.getUserIdLong(), channel.getIdLong())) {
+                var userPriv = channelUsersRepository.findByUserIdAndChannelsTable_ChannelId(event.getUserIdLong(), channel.getIdLong());
+                if (event.getMember().getPermissions(channel).contains(Permission.VIEW_CHANNEL)) {
+                    logger.info("User {} try to subscribe already subscribed channel {}", event.getMember(), channel);
+                }
+                if (userPriv.isEmpty() || userPriv.get().getPrivilege() != Utils.Privilege.BAN.getOffset()) {
                     permissionService.setBasePermitsToUser(channel, event.getMember());
                 }
             } else if (event.getReaction().getEmoji().getAsReactionCode().equals(NO_REACTION)) {
@@ -66,16 +73,4 @@ public class ChannelSubscribeLogic extends ListenerAdapter {
         msg.addReaction(fromUnicode(YES_REACTION)).queue();
         msg.addReaction(fromUnicode(NO_REACTION)).queue();
     }
-//    private void setUpChannelUser(TextChannel newChannel, Member member) {
-//        newChannel.getPermissionContainer()
-//                .upsertPermissionOverride(member)
-//                .setPermissions(textChannelUserPermission, null).queue();
-//        var channel = new ChannelUsersTable();
-//        channel.setChannelId(newChannel.getIdLong());
-//        channel.setUserId(member.getIdLong());
-//        channel.setGuildMetaTable(metaRepository.findById(newChannel.getGuild().getIdLong()).orElseThrow(() -> new NoSuchElementException("Can't found proper guild in database")));
-//        channelUsersRepository.save(channel);
-//        logger.info("Granted view to user {} for channel {}", member, newChannel);
-//    }
-
 }

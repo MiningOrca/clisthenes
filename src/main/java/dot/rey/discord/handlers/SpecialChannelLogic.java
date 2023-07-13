@@ -39,12 +39,12 @@ public class SpecialChannelLogic extends ListenerAdapter {
 
     private void setupChannel(ChannelUsersTable channelUsersTable, GuildMemberJoinEvent event) {
         switch (Utils.Privilege.getFromOffset(channelUsersTable.getPrivilege())) {
-            case BAN ->
-                    permissionService.banChannelForMember(event.getGuild().getGuildChannelById(channelUsersTable.getChannelId()), event.getMember());
-            case USER ->
-                    permissionService.setBasePermitsToUser(event.getGuild().getGuildChannelById(channelUsersTable.getChannelId()), event.getMember());
-            case MODERATOR ->
-                    permissionService.setAsModerator(Objects.requireNonNull(event.getGuild().getTextChannelById(channelUsersTable.getChannelId())), event.getMember());
+            case BAN -> permissionService
+                    .banChannelForMember(event.getGuild().getGuildChannelById(channelUsersTable.getChannelId()), event.getMember());
+            case USER -> permissionService
+                    .setBasePermitsToUser(event.getGuild().getGuildChannelById(channelUsersTable.getChannelId()), event.getMember());
+            case MODERATOR -> permissionService
+                    .setAsModerator(Objects.requireNonNull(event.getGuild().getTextChannelById(channelUsersTable.getChannelId())), event.getMember());
             case OWNER, CHOSEN_ADMIN -> logger.error("OWNER or CHOSEN_ADMIN should not be saved");
         }
     }
@@ -61,8 +61,20 @@ public class SpecialChannelLogic extends ListenerAdapter {
                 enableChannelForUser(event);
             } else if (rawMessage.startsWith("getbans")) {
                 provideBanList(event);
+            } else if (rawMessage.startsWith("spyuser")) {
+                provideChannelList(event);
             }
         }
+    }
+
+    private void provideChannelList(MessageReceivedEvent event) {
+        final StringBuilder message = new StringBuilder();
+        var members = event.getMessage().getMentions().getMembers();
+        members.forEach(m -> channelUsersRepository
+                .findAllByGuildMetaTable_GuildIdAndUserId(event.getGuild().getIdLong(), m.getIdLong())
+                .forEach(c -> message.append("<@").append(c.getUserId()).append(">")
+                        .append("subscribed to <#").append(c.getChannelId()).append(">").append("\n")));
+        event.getChannel().sendMessage(message.toString()).queue();
     }
 
     private void provideBanList(MessageReceivedEvent event) {

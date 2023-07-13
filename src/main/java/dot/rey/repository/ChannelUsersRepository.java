@@ -20,7 +20,6 @@ public interface ChannelUsersRepository extends JpaRepository<ChannelUsersTable,
 
     Boolean existsByUserIdAndChannelsTable_ChannelId(Long userId, Long channelId);
 
-
     List<ChannelUsersTable> findAllByGuildMetaTable_GuildIdAndUserId(Long guildMetaTable_guildId, Long userId);
 
     List<ChannelUsersTable> findAllByGuildMetaTable_GuildIdAndPrivilege(Long guildId, Integer privilege);

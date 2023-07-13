@@ -6,10 +6,8 @@ services:
     build:
       context: .
     container_name: app
-    depends_on:
-      - db-clisthenes
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-clisthenes:5432/compose-postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/compose-postgres
       - SPRING_DATASOURCE_USERNAME=compose-postgres
       - SPRING_DATASOURCE_PASSWORD=compose-postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
