@@ -60,11 +60,12 @@ public class ChannelSubscribeLogic extends ListenerAdapter {
                 if (userPriv.isEmpty() || userPriv.get().getPrivilege() != Utils.Privilege.BAN.getOffset()) {
                     permissionService.setBasePermitsToUser(channel, event.getMember());
                 }
+                event.retrieveMessage().complete().removeReaction(event.getEmoji(), Objects.requireNonNull(event.getUser())).queue();
             } else if (event.getReaction().getEmoji().getAsReactionCode().equals(NO_REACTION)) {
                 var channel = event.retrieveMessage().complete().getMentions().getChannels().get(0);
                 permissionService.retiredChannelUser((TextChannel) channel, event.getMember());
+                event.retrieveMessage().complete().removeReaction(event.getEmoji(), Objects.requireNonNull(event.getUser())).queue();
             }
-            event.retrieveMessage().complete().removeReaction(event.getEmoji(), Objects.requireNonNull(event.getUser())).queue();
         }
     }
 
