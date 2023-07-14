@@ -16,3 +16,5 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/compose-postgres}
     username: ${SPRING_DATASOURCE_USERNAME:compose-postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:compose-postgres}
+discord:
+  token: ${DISCORD_TOKEN}

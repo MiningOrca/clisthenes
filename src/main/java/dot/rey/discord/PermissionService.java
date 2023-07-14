@@ -184,7 +184,8 @@ public class PermissionService {
         var guild = event.getGuild();
         var channel = event.getChannel();
         Objects.requireNonNull(guild).getChannels()
-                .stream().filter(c -> c.getType() == ChannelType.TEXT)
+                .stream()
+                .filter(c -> c.getType() == ChannelType.TEXT)
                 .forEach(c -> {
                     insertToDB(guild.getIdLong(), 0L, c.getIdLong());
                     channel.sendMessage("Subscribe to ".concat(c.getName()).concat("\n").concat(c.getAsMention())).queue();
