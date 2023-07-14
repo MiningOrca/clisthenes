@@ -6,13 +6,9 @@ import javax.persistence.*;
 @Table(name = "channel_users", uniqueConstraints = {@UniqueConstraint(columnNames = {"channel_id", "user_id"})})
 public class ChannelUsersTable {
 
-    //will be much better to save user-channel-permitsInt
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-
-//    @Column(name = "channel_id", nullable = false)
-//    private Long channelId;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;

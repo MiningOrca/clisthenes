@@ -22,7 +22,7 @@ public class DiscordClient implements CommandLineRunner {
     private SpecialChannelLogic specialChannelLogic;
     @Autowired
     private ChannelRenameLogic channelRenameLogic;
-    @Value("discord.token")
+    @Value("${discord.token}")
     private String token;
 
     public DiscordClient(ChannelCreationLogic channelCreationLogic) {
@@ -30,7 +30,7 @@ public class DiscordClient implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         var jda = JDABuilder
                 .createDefault(token)
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)

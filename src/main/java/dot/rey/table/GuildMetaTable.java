@@ -21,9 +21,6 @@ public class GuildMetaTable {
     @Column(name = "user_channel_limit")
     private Long channelLimit = 3L;
 
-    @Column(name = "breeder_channel")
-    private Long breederChannelId;
-
     @OneToMany(mappedBy = "guildMetaTable", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChannelUsersTable> channels = new ArrayList<>();
 
@@ -36,14 +33,6 @@ public class GuildMetaTable {
 
     public void setChannelLimit(Long channelLimit) {
         this.channelLimit = channelLimit;
-    }
-
-    public Long getBreederChannelId() {
-        return breederChannelId;
-    }
-
-    public void setBreederChannelId(Long breederChannelId) {
-        this.breederChannelId = breederChannelId;
     }
 
     public Long getGuildId() {

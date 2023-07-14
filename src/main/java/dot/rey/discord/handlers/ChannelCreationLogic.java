@@ -63,7 +63,7 @@ public class ChannelCreationLogic extends ListenerAdapter {
             event.getChannel().sendMessage(event.getAuthor().getAsMention() + " please do not use another channel mentions as channel name, moron").queue(m -> m.delete().queueAfter(100, TimeUnit.SECONDS));
             event.getMessage().delete().queue();
             return;
-        } else if (userChannelRepository.findAllByOwnerId(event.getAuthor().getIdLong()).map(List::size).orElse(0) >=
+        } else if (userChannelRepository.findAllByOwnerIdAndGuildMetaTable_GuildId(event.getAuthor().getIdLong(), event.getGuild().getIdLong()).size() >=
                 metaRepository.getChannelLimitByGuildId(event.getGuild().getIdLong())) {
             logger.info("User {} reached limit with channel creation", event.getMember());
             event.getChannel().sendMessage(event.getAuthor().getAsMention() + " you're reached a limit with channel created").queue(m -> m.delete().queueAfter(100, TimeUnit.SECONDS));

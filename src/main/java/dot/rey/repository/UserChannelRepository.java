@@ -5,10 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public interface UserChannelRepository extends JpaRepository<ChannelsTable, Long> {
-    Optional<List<ChannelsTable>> findAllByOwnerId(Long ownerId);
+    List<ChannelsTable> findAllByOwnerIdAndGuildMetaTable_GuildId(Long ownerId, Long guildId);
 
     ArrayList<Long> findAllByParentChannelId(Long parentChannelId);
 }

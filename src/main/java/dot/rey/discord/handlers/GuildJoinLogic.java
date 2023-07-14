@@ -83,6 +83,10 @@ public class GuildJoinLogic extends ListenerAdapter {
 //                        .addOption(OptionType.STRING, "name", "new channel name", true)
 //                        .setDefaultPermissions(enabledFor(Permission.MANAGE_CHANNEL)),
                 Commands.slash("start_migration", "migrate all current guild channels as msg with join possibility")
+                        .addOption(OptionType.BOOLEAN, "withposting", "post messages to join into migrated channel", false)
+                        .setDefaultPermissions(enabledFor(Permission.ADMINISTRATOR)),
+                Commands.slash("clean_ownership", "migrate all current guild channels as msg with join possibility")
+                        .addOption(OptionType.USER, "name", "username", true)
                         .setDefaultPermissions(enabledFor(Permission.ADMINISTRATOR))
         ).queue();
     }

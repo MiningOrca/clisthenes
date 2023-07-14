@@ -188,10 +188,20 @@ public class PermissionService {
                 .filter(c -> c.getType() == ChannelType.TEXT)
                 .forEach(c -> {
                     insertToDB(guild.getIdLong(), 0L, c.getIdLong());
-                    channel.sendMessage("Subscribe to ".concat(c.getName()).concat("\n").concat(c.getAsMention())).queue();
+                    if (event.getOption("withPost") != null && event.getOption("withPost").getAsBoolean()) {
+                        channel.sendMessage("Subscribe to ".concat(c.getName()).concat("\n").concat(c.getAsMention())).queue();
+                    }
                 });
         GuildMetaTable guildMetaTable = metaRepository.findById(guild.getIdLong()).orElseThrow(() -> new NoSuchElementException("Can't found proper guild in database"));
         guildMetaTable.setSystemChannelId(channel.getIdLong());
         metaRepository.save(guildMetaTable);
+    }
+
+    public void cleanChannelOwnership(Member name) {
+        userChannelRepository.findAllByOwnerIdAndGuildMetaTable_GuildId(name.getIdLong(), name.getGuild().getIdLong())
+                .stream().findFirst().ifPresent(channel -> {
+                    channel.setOwnerId(0L);
+                    userChannelRepository.save(channel);
+                });
     }
 }
