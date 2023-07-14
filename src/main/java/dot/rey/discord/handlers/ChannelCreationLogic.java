@@ -3,21 +3,27 @@ package dot.rey.discord.handlers;
 import dot.rey.discord.PermissionService;
 import dot.rey.repository.GuildMetaRepository;
 import dot.rey.repository.UserChannelRepository;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static dot.rey.discord.Utils.textChannelAdminPermission;
+import static java.awt.Color.GRAY;
 
 @Component
 public class ChannelCreationLogic extends ListenerAdapter {
@@ -71,11 +77,26 @@ public class ChannelCreationLogic extends ListenerAdapter {
     }
 
     private void replaceInitMessage(MessageReceivedEvent event, TextChannel newChannel) {
-        var message = MessageCreateBuilder.fromMessage(event.getMessage())
-                .setContent(event.getMessage().getContentRaw().concat("\n").concat(newChannel.getAsMention())).build();
+        var message = new MessageCreateBuilder()
+                .addEmbeds(buildEmbed(event, newChannel))
+                .addContent(newChannel.getName() + "\n" + newChannel.getAsMention())
+                .build();
         event.getMessage().delete().queue();
         event.getChannel().sendMessage(message).queue();
         logger.info("Replace init message");
+    }
+
+    private MessageEmbed buildEmbed(MessageReceivedEvent event, TextChannel newChannel) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setAuthor(event.getAuthor().getName(), null, event.getAuthor().getAvatarUrl());
+        embedBuilder.setColor(GRAY);
+        embedBuilder.setTitle(newChannel.getName() + " " + newChannel.getAsMention());
+        embedBuilder.setDescription(StringUtils.substringAfter(event.getMessage().getContentRaw(), "\n"));
+        if (!event.getMessage().getAttachments().isEmpty()) {
+            event.getMessage().getAttachments().stream().filter(Message.Attachment::isImage).findFirst()
+                    .ifPresent(a -> embedBuilder.setThumbnail(a.getUrl()));
+        }
+        return embedBuilder.build();
     }
 
     private TextChannel createNewChannel(String channelName, MessageReceivedEvent event) {

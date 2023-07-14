@@ -1,6 +1,7 @@
 package dot.rey.discord.handlers;
 
 import dot.rey.repository.GuildMetaRepository;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageType;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
@@ -32,8 +33,10 @@ public class ChannelRenameLogic extends ListenerAdapter {
                             .getParentChannel().asTextChannel().retrieveMessageById(parentId)
                             .queue(message -> {
                                         logger.info("Editing message " + message);
-                                        var channel = message.getMentions().getChannels().get(0).getAsMention();
-                                        message.editMessage(event.getMessage().getContentRaw() + "\n" + channel).queue();
+                                        var currentEmbed = message.getEmbeds().get(0);
+                                        var newEmbed = new EmbedBuilder(currentEmbed)
+                                                .setDescription(event.getMessage().getContentRaw()).build();
+                                        message.editMessageEmbeds(newEmbed).queue();
                                         logger.info("Message edited");
                                     },
                                     error -> {
