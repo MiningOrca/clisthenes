@@ -58,6 +58,15 @@ public class PermissionService {
         } else channelsSet.forEach(channel -> subscribeUserToChannel(member, channel));
     }
 
+    public void setBasePermitsToUserWithCheck(Member member, GuildChannel channel) {
+        var userPriv = channelUsersRepository.findByUserIdAndChannelsTable_ChannelId(member.getIdLong(), channel.getIdLong());
+        if (member.getPermissions(channel).contains(Permission.VIEW_CHANNEL)) {
+            logger.info("User {} try to subscribe already subscribed channel {}", member, channel);
+        } else if (userPriv.isEmpty() || userPriv.get().getPrivilege() != Utils.Privilege.BAN.getOffset()) {
+            this.setBasePermitsToUser(channel, member);
+        }
+    }
+
     private void subscribeUserToChannel(Member member, GuildChannel c) {
         logger.info("Granted view to user {} for channel {}", member, c);
         if (c instanceof TextChannel) {
@@ -114,7 +123,7 @@ public class PermissionService {
         channelUsersRepository.updatePrivilege(channel.getIdLong(), member.getIdLong(), MODERATOR.getOffset());
     }
 
-    public void retiredChannelUser(TextChannel newChannel, Member member) {
+    public void retiredChannelUser(GuildChannel newChannel, Member member) {
         logger.info("Retired view to user {} for channel {}", member, newChannel);
         newChannel.getPermissionContainer()
                 .upsertPermissionOverride(member)

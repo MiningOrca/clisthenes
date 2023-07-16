@@ -1,9 +1,11 @@
 package dot.rey.discord.handlers;
 
+import dot.rey.discord.PermissionService;
 import dot.rey.discord.Utils;
 import dot.rey.repository.GuildMetaRepository;
 import dot.rey.table.GuildMetaTable;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.guild.GenericGuildEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
@@ -16,7 +18,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumSet;
+import java.util.Objects;
+import java.util.Optional;
 
+import static dot.rey.discord.Utils.NO_REACTION;
+import static dot.rey.discord.Utils.YES_REACTION;
 import static net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions.enabledFor;
 
 @Component
@@ -24,10 +30,12 @@ public class GuildJoinLogic extends ListenerAdapter {
 
     final Logger logger = LoggerFactory.getLogger(ChannelCreationLogic.class);
 
+    private final PermissionService permissionService;
     private final GuildMetaRepository guildMetaRepository;
 
-    public GuildJoinLogic(GuildMetaRepository guildMetaRepository) {
+    public GuildJoinLogic(GuildMetaRepository guildMetaRepository, PermissionService permissionService) {
         this.guildMetaRepository = guildMetaRepository;
+        this.permissionService = permissionService;
     }
 
 
@@ -89,6 +97,46 @@ public class GuildJoinLogic extends ListenerAdapter {
                         .addOption(OptionType.USER, "name", "username", true)
                         .setDefaultPermissions(enabledFor(Permission.ADMINISTRATOR))
         ).queue();
+        checkSystemChannel(event);
+    }
+
+    private void checkSystemChannel(GenericGuildEvent event) {
+        var guild = event.getGuild();
+        logger.info("Check system channel in guild {} {} after downtime", guild.getName(), guild.getId());
+        var systemChannel = guild.getTextChannelById(guildMetaRepository.getSystemChannelId(event.getGuild().getIdLong()));
+        try {
+            var messages = Objects.requireNonNull(systemChannel).getIterableHistory().takeAsync(1000).get();
+            messages.stream()
+                    .filter(message -> !message.getMentions().getChannels().isEmpty())
+                    .filter(message -> !message.getReactions().isEmpty())
+                    .forEach(message -> {
+                        Optional.ofNullable(message
+                                .getReaction(Emoji.fromUnicode(YES_REACTION))).ifPresent(reaction ->
+                                reaction
+                                        .retrieveUsers().complete().stream()
+                                        .filter(u -> !u.isBot())
+                                        .map(user -> event.getGuild().retrieveMember(user).complete())
+                                        .filter(Objects::nonNull)
+                                        .forEach(member -> {
+                                            permissionService.setBasePermitsToUserWithCheck(member, message.getMentions().getChannels().get(0));
+                                            reaction.removeReaction(member.getUser()).complete();
+                                        }));
+                        Optional.ofNullable(message
+                                .getReaction(Emoji.fromUnicode(NO_REACTION))).ifPresent(reaction ->
+                                reaction
+                                        .retrieveUsers().complete().stream()
+                                        .filter(u -> !u.isBot())
+                                        .map(user -> event.getGuild().retrieveMember(user).complete())
+                                        .filter(Objects::nonNull)
+                                        .forEach(member -> {
+                                            permissionService.retiredChannelUser(message.getMentions().getChannels().get(0), member);
+                                            reaction.removeReaction(member.getUser()).complete();
+                                        }));
+                    });
+        } catch (Exception e) {
+            logger.error("Exception during reading system channel messages in {} {}", guild.getName(), guild.getId());
+        }
+        logger.info("Check system channel in guild {} {} after downtime - finished", guild.getName(), guild.getId());
     }
 
     private void setupBanChannel(GenericGuildEvent event) {
