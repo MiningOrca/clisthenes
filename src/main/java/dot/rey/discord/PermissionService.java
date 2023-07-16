@@ -3,7 +3,6 @@ package dot.rey.discord;
 import dot.rey.discord.handlers.SpecialChannelLogic;
 import dot.rey.repository.ChannelUsersRepository;
 import dot.rey.repository.GuildMetaRepository;
-import dot.rey.repository.SubchannelRepository;
 import dot.rey.repository.UserChannelRepository;
 import dot.rey.table.ChannelUsersTable;
 import dot.rey.table.ChannelsTable;
@@ -18,7 +17,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,15 +34,16 @@ import static dot.rey.discord.Utils.Privilege.*;
 @Transactional
 public class PermissionService {
 
-    final static Logger logger = LoggerFactory.getLogger(SpecialChannelLogic.class);
-    @Autowired
-    private GuildMetaRepository metaRepository;
-    @Autowired
-    private SubchannelRepository subchannelRepository;
-    @Autowired
-    private ChannelUsersRepository channelUsersRepository;
-    @Autowired
-    private UserChannelRepository userChannelRepository;
+    private final Logger logger = LoggerFactory.getLogger(SpecialChannelLogic.class);
+    private final GuildMetaRepository metaRepository;
+    private final ChannelUsersRepository channelUsersRepository;
+    private final UserChannelRepository userChannelRepository;
+
+    public PermissionService(GuildMetaRepository metaRepository, ChannelUsersRepository channelUsersRepository, UserChannelRepository userChannelRepository) {
+        this.metaRepository = metaRepository;
+        this.channelUsersRepository = channelUsersRepository;
+        this.userChannelRepository = userChannelRepository;
+    }
 
     public void setBasePermitsToUser(GuildChannel c, Member member) {
         Set<GuildChannel> channelsSet = userChannelRepository.findById(c.getIdLong()).stream()

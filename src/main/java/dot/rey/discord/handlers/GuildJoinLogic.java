@@ -28,7 +28,7 @@ import static net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 @Component
 public class GuildJoinLogic extends ListenerAdapter {
 
-    final Logger logger = LoggerFactory.getLogger(ChannelCreationLogic.class);
+    private final Logger logger = LoggerFactory.getLogger(ChannelCreationLogic.class);
 
     private final PermissionService permissionService;
     private final GuildMetaRepository guildMetaRepository;

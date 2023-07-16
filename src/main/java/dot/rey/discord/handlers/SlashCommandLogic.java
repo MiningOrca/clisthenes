@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import static dot.rey.discord.Utils.Privilege.UNBANNED;
@@ -16,11 +15,14 @@ import static dot.rey.discord.Utils.Privilege.UNBANNED;
 @Component
 public class SlashCommandLogic extends ListenerAdapter {
 
-    @Autowired
-    private PermissionService permissionService;
-    @Autowired
-    private ChannelUsersRepository channelUsersRepository;
-    final static Logger logger = LoggerFactory.getLogger(SlashCommandLogic.class);
+    private final PermissionService permissionService;
+    private final ChannelUsersRepository channelUsersRepository;
+    private final Logger logger = LoggerFactory.getLogger(SlashCommandLogic.class);
+
+    public SlashCommandLogic(PermissionService permissionService, ChannelUsersRepository channelUsersRepository) {
+        this.permissionService = permissionService;
+        this.channelUsersRepository = channelUsersRepository;
+    }
 
 
     @Override

@@ -23,13 +23,16 @@ import static net.dv8tion.jda.api.entities.emoji.Emoji.fromUnicode;
 @Component
 @Transactional
 public class ChannelSubscribeLogic extends ListenerAdapter {
-    final static Logger logger = LoggerFactory.getLogger(ChannelSubscribeLogic.class);
-    @Autowired
-    private PermissionService permissionService;
-    @Autowired
-    private ChannelUsersRepository channelUsersRepository;
-    @Autowired
-    private GuildMetaRepository metaRepository;
+    private final Logger logger = LoggerFactory.getLogger(ChannelSubscribeLogic.class);
+    private final PermissionService permissionService;
+    private final ChannelUsersRepository channelUsersRepository;
+    private final GuildMetaRepository metaRepository;
+
+    public ChannelSubscribeLogic(PermissionService permissionService, ChannelUsersRepository channelUsersRepository, GuildMetaRepository metaRepository) {
+        this.permissionService = permissionService;
+        this.channelUsersRepository = channelUsersRepository;
+        this.metaRepository = metaRepository;
+    }
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -58,7 +61,7 @@ public class ChannelSubscribeLogic extends ListenerAdapter {
         }
     }
 
-    private static void addReactionsOnChannelMessages(Message msg) {
+    private void addReactionsOnChannelMessages(Message msg) {
         logger.info("Added reaction for message with channel mention {}", msg.getId());
         msg.addReaction(fromUnicode(YES_REACTION)).queue();
         msg.addReaction(fromUnicode(NO_REACTION)).queue();

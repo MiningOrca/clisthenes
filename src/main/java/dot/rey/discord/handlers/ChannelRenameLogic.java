@@ -10,17 +10,17 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ChannelRenameLogic extends ListenerAdapter {
 
-    final Logger logger = LoggerFactory.getLogger(ChannelRenameLogic.class);
+    private final Logger logger = LoggerFactory.getLogger(ChannelRenameLogic.class);
+    private final GuildMetaRepository metaRepository;
 
-
-    @Autowired
-    private GuildMetaRepository metaRepository;
+    public ChannelRenameLogic(GuildMetaRepository metaRepository) {
+        this.metaRepository = metaRepository;
+    }
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {

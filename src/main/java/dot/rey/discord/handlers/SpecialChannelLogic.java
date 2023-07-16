@@ -10,25 +10,26 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
 import static dot.rey.discord.Utils.Privilege.BAN;
-import static dot.rey.discord.Utils.Privilege.MODERATOR;
 
 @Component
 public class SpecialChannelLogic extends ListenerAdapter {
 
-    final static Logger logger = LoggerFactory.getLogger(SpecialChannelLogic.class);
+    private final Logger logger = LoggerFactory.getLogger(SpecialChannelLogic.class);
 
-    @Autowired
-    private PermissionService permissionService;
-    @Autowired
-    private GuildMetaRepository metaRepository;
-    @Autowired
-    private ChannelUsersRepository channelUsersRepository;
+    private final PermissionService permissionService;
+    private final GuildMetaRepository metaRepository;
+    private final ChannelUsersRepository channelUsersRepository;
+
+    public SpecialChannelLogic(PermissionService permissionService, GuildMetaRepository metaRepository, ChannelUsersRepository channelUsersRepository) {
+        this.permissionService = permissionService;
+        this.metaRepository = metaRepository;
+        this.channelUsersRepository = channelUsersRepository;
+    }
 
     @Override
     //why have it here? dunno

@@ -22,7 +22,7 @@ public class Utils {
              ban<@user_id><#channel_id> - to 'ban' user in channel
              forgive<@user_id><#channel_id> - to 'unban' user in channel
              getbans - to get list of all banned users
-             spyuser<@user_id> - to get list of all user channels 
+             spyuser<@user_id> - to get list of all user channels
             \s""";
     public static EnumSet<Permission> voiceChannelUserPermission = initVoiceUserPermission();
 

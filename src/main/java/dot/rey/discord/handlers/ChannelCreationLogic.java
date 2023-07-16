@@ -15,11 +15,9 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumSet;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static dot.rey.discord.Utils.textChannelAdminPermission;
@@ -28,16 +26,16 @@ import static java.awt.Color.GRAY;
 @Component
 public class ChannelCreationLogic extends ListenerAdapter {
 
-    @Autowired
-    private PermissionService permissionService;
-    @Autowired
-    private UserChannelRepository userChannelRepository;
+    private final PermissionService permissionService;
+    private final UserChannelRepository userChannelRepository;
     private final GuildMetaRepository metaRepository;
-    final Logger logger = LoggerFactory.getLogger(ChannelCreationLogic.class);
+    private final Logger logger = LoggerFactory.getLogger(ChannelCreationLogic.class);
 
 
-    public ChannelCreationLogic(GuildMetaRepository metaRepository) {
+    public ChannelCreationLogic(GuildMetaRepository metaRepository, PermissionService permissionService, UserChannelRepository userChannelRepository) {
         this.metaRepository = metaRepository;
+        this.permissionService = permissionService;
+        this.userChannelRepository = userChannelRepository;
     }
 
     @Override
