@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 
 import static dot.rey.discord.Utils.Privilege.BAN;
+import static dot.rey.discord.Utils.Privilege.MODERATOR;
 
 @Component
 public class SpecialChannelLogic extends ListenerAdapter {
@@ -72,9 +73,17 @@ public class SpecialChannelLogic extends ListenerAdapter {
         var members = event.getMessage().getMentions().getMembers();
         members.forEach(m -> channelUsersRepository
                 .findAllByGuildMetaTable_GuildIdAndUserId(event.getGuild().getIdLong(), m.getIdLong())
-                .forEach(c -> message.append("<@").append(c.getUserId()).append(">")
-                        .append("subscribed to <#").append(c.getChannelId()).append(">").append("\n")));
+                .forEach(c -> buildUserSubscriptionsList(message, c)));
         event.getChannel().sendMessage(message.toString()).queue();
+    }
+
+    private void buildUserSubscriptionsList(StringBuilder message, ChannelUsersTable c) {
+        message.append("<@")
+                .append(c.getUserId()).append(">").append(" has ")
+                .append(Utils.Privilege.getFromOffset(c.getPrivilege()).name().toLowerCase())
+                .append(" privileges in channel <#")
+                .append(c.getChannelId())
+                .append(">").append(" subscribed from ").append(c.getSubscriptionDate()).append("\n");
     }
 
     private void provideBanList(MessageReceivedEvent event) {
@@ -82,7 +91,9 @@ public class SpecialChannelLogic extends ListenerAdapter {
         channelUsersRepository
                 .findAllByGuildMetaTable_GuildIdAndPrivilege(event.getGuild().getIdLong(), BAN.getOffset())
                 .forEach(c -> message.append("<@").append(c.getUserId()).append(">")
-                        .append("banned in <#").append(c.getChannelId()).append(">").append("\n"));
+                        .append("banned in <#").append(c.getChannelId()).append(">")
+                        .append(" from ")
+                        .append(c.getBannedDate()).append("\n"));
         event.getChannel().sendMessage(message.toString()).queue();
     }
 

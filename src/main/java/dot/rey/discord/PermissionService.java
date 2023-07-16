@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -92,6 +93,7 @@ public class PermissionService {
         channelUser.setGuildMetaTable(metaRepository.findById(c.getGuild().getIdLong()).orElseThrow());
         channelUser.setUserId(member.getIdLong());
         channelUser.setChannelId(c.getIdLong());
+        channelUser.setBannedDate(LocalDateTime.now());
         channelUser.setPrivilege(BAN.getOffset());
         channelUsersRepository.save(channelUser);
     }

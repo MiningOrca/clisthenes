@@ -3,6 +3,7 @@ package dot.rey.discord.handlers;
 import dot.rey.repository.GuildMetaRepository;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageType;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -31,14 +32,7 @@ public class ChannelRenameLogic extends ListenerAdapter {
                     var parentId = msg.getGuildChannel().asThreadChannel().getId();
                     event.getChannel().asThreadChannel()
                             .getParentChannel().asTextChannel().retrieveMessageById(parentId)
-                            .queue(message -> {
-                                        logger.info("Editing message " + message);
-                                        var currentEmbed = message.getEmbeds().get(0);
-                                        var newEmbed = new EmbedBuilder(currentEmbed)
-                                                .setDescription(event.getMessage().getContentRaw()).build();
-                                        message.editMessageEmbeds(newEmbed).queue();
-                                        logger.info("Message edited");
-                                    },
+                            .queue(message -> editMessage(event, message),
                                     error -> {
                                         logger.error("Failed to retrieve message with ID: " + parentId);
                                         error.printStackTrace();
@@ -51,5 +45,21 @@ public class ChannelRenameLogic extends ListenerAdapter {
                 }
             }
         }
+    }
+
+    private void editMessage(MessageReceivedEvent event, Message message) {
+        logger.info("Editing message " + message);
+        var currentEmbed = message.getEmbeds().get(0);
+        var newMessage = event.getMessage();
+        if (newMessage.getContentRaw().startsWith("/change")) { //undocumented feature xd
+            newMessage.getMentions().getChannels().stream().findFirst()
+                    .ifPresent(m -> message
+                            .editMessage(m.getName() + "\n" + m.getAsMention()).queue());
+        } else {
+            var newEmbed = new EmbedBuilder(currentEmbed)
+                    .setDescription(newMessage.getContentRaw()).build();
+            message.editMessageEmbeds(newEmbed).queue();
+        }
+        logger.info("Message edited");
     }
 }

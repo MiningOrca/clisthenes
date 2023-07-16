@@ -1,6 +1,9 @@
 package dot.rey.table;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "channel_users", uniqueConstraints = {@UniqueConstraint(columnNames = {"channel_id", "user_id"})})
@@ -23,6 +26,25 @@ public class ChannelUsersTable {
     @ManyToOne
     @JoinColumn(name = "channel_id", nullable = false)
     private ChannelsTable channelsTable;
+
+    @Column(name = "subscription_date")
+    @CreationTimestamp
+    private LocalDateTime subscriptionDate;
+
+    @Column(name = "banned_date")
+    private LocalDateTime bannedDate;
+
+    public LocalDateTime getSubscriptionDate() {
+        return subscriptionDate;
+    }
+
+    public LocalDateTime getBannedDate() {
+        return bannedDate;
+    }
+
+    public void setBannedDate(LocalDateTime bannedDate) {
+        this.bannedDate = bannedDate;
+    }
 
     public Long getChannelId() {
         return channelsTable.getChannelId();
