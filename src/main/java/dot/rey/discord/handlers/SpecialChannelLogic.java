@@ -5,6 +5,7 @@ import dot.rey.discord.Utils;
 import dot.rey.repository.ChannelUsersRepository;
 import dot.rey.repository.GuildMetaRepository;
 import dot.rey.table.ChannelUsersTable;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import static dot.rey.discord.Utils.Privilege.BAN;
@@ -24,6 +26,7 @@ public class SpecialChannelLogic extends ListenerAdapter {
     private final PermissionService permissionService;
     private final GuildMetaRepository metaRepository;
     private final ChannelUsersRepository channelUsersRepository;
+    private final String SPLITTER_LINE = "SPLITTER-LINE";
 
     public SpecialChannelLogic(PermissionService permissionService, GuildMetaRepository metaRepository, ChannelUsersRepository channelUsersRepository) {
         this.permissionService = permissionService;
@@ -75,7 +78,8 @@ public class SpecialChannelLogic extends ListenerAdapter {
         members.forEach(m -> channelUsersRepository
                 .findAllByGuildMetaTable_GuildIdAndUserId(event.getGuild().getIdLong(), m.getIdLong())
                 .forEach(c -> buildUserSubscriptionsList(message, c)));
-        event.getChannel().sendMessage(message.toString()).queue();
+        Arrays.stream(message.toString().split(SPLITTER_LINE))
+                .forEach(m -> event.getChannel().sendMessage(m.trim()).queue());
     }
 
     private void buildUserSubscriptionsList(StringBuilder message, ChannelUsersTable c) {
@@ -84,18 +88,27 @@ public class SpecialChannelLogic extends ListenerAdapter {
                 .append(Utils.Privilege.getFromOffset(c.getPrivilege()).name().toLowerCase())
                 .append(" privileges in channel <#")
                 .append(c.getChannelId())
-                .append(">").append(" subscribed from ").append(c.getSubscriptionDate()).append("\n");
+                .append(">").append(" from ").append(c.getSubscriptionDate()).append("\n");
+        if (message.length() >= Message.MAX_CONTENT_LENGTH) {
+            message.append(SPLITTER_LINE);
+        }
     }
 
     private void provideBanList(MessageReceivedEvent event) {
         final StringBuilder message = new StringBuilder();
         channelUsersRepository
                 .findAllByGuildMetaTable_GuildIdAndPrivilege(event.getGuild().getIdLong(), BAN.getOffset())
-                .forEach(c -> message.append("<@").append(c.getUserId()).append(">")
-                        .append("banned in <#").append(c.getChannelId()).append(">")
-                        .append(" from ")
-                        .append(c.getBannedDate()).append("\n"));
-        event.getChannel().sendMessage(message.toString()).queue();
+                .forEach(c -> buildBanMessage(message, c));
+        Arrays.stream(message.toString().split(SPLITTER_LINE))
+                .forEach(m -> event.getChannel().sendMessage(m.trim()).queue());
+    }
+
+    private void buildBanMessage(StringBuilder message, ChannelUsersTable c) {
+        message.append("<@").append(c.getUserId()).append(">")
+                .append("banned in <#").append(c.getChannelId()).append(">")
+                .append(" from ")
+                .append(c.getBannedDate()).append("\n");
+        if (message.length() >= Message.MAX_CONTENT_LENGTH) message.append(SPLITTER_LINE);
     }
 
     private void enableChannelForUser(MessageReceivedEvent event) {

@@ -56,6 +56,10 @@ public class ChannelCreationLogic extends ListenerAdapter {
             event.getChannel().sendMessage(event.getAuthor().getAsMention() + " please use '\\n' as setup").queue(m -> m.delete().queueAfter(100, TimeUnit.SECONDS));
             event.getMessage().delete().queue();
             return;
+        } else if (splitMsg.length > Message.MAX_CONTENT_LENGTH) {
+            logger.info("Malformed message, too many symbols " + event.getMessage().getContentRaw());
+            event.getChannel().sendMessage(event.getAuthor().getAsMention() + " no more than " + Message.MAX_CONTENT_LENGTH + " symbols").queue(m -> m.delete().queueAfter(100, TimeUnit.SECONDS));
+            event.getMessage().delete().queue();
         } else if (splitMsg[0].contains("<#")) {
             logger.info("Malformed message, should not hava channel mentioned  " + event.getMessage().getContentRaw());
             event.getChannel().sendMessage(event.getAuthor().getAsMention() + " please do not use another channel mentions as channel name, moron").queue(m -> m.delete().queueAfter(100, TimeUnit.SECONDS));
