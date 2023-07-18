@@ -3,7 +3,9 @@ package dot.rey.discord.handlers;
 import dot.rey.discord.PermissionService;
 import dot.rey.repository.ChannelUsersRepository;
 import dot.rey.repository.GuildMetaRepository;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 import static dot.rey.discord.Utils.NO_REACTION;
 import static dot.rey.discord.Utils.YES_REACTION;
@@ -38,7 +41,7 @@ public class ChannelSubscribeLogic extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         var mentionedChannels = event.getMessage().getMentions().getChannels();
         if (!mentionedChannels.isEmpty()) {
-            logger.info("Found channel mention in message with id" + event.getMessageId());
+            logger.info("Found channel mention in message with id " + event.getMessageId());
             if (channelUsersRepository.existsByChannelsTable_ChannelId(mentionedChannels.get(0).getIdLong())
                     && event.getChannel().getIdLong() != metaRepository.getBanChannelId(event.getGuild().getIdLong())) {
                 addReactionsOnChannelMessages(event.getMessage());
@@ -49,16 +52,17 @@ public class ChannelSubscribeLogic extends ListenerAdapter {
     @Override
     public void onGenericMessageReaction(@NotNull GenericMessageReactionEvent event) {
         if (event instanceof MessageReactionAddEvent && Objects.requireNonNull(event.getMember()).getIdLong() != (event.getJDA().getSelfUser().getIdLong())) {
-            if (event.getReaction().getEmoji().getAsReactionCode().equals(YES_REACTION)) {
-                var channel = event.retrieveMessage().complete().getMentions().getChannels().get(0);
-                permissionService.setBasePermitsToUserWithCheck(event.getMember(), channel);
-                event.retrieveMessage().complete().removeReaction(event.getEmoji(), Objects.requireNonNull(event.getUser())).queue();
-            } else if (event.getReaction().getEmoji().getAsReactionCode().equals(NO_REACTION)) {
-                var channel = event.retrieveMessage().complete().getMentions().getChannels().get(0);
-                permissionService.retiredChannelUser(channel, event.getMember());
-                event.retrieveMessage().complete().removeReaction(event.getEmoji(), Objects.requireNonNull(event.getUser())).queue();
+            switch (event.getReaction().getEmoji().getAsReactionCode()) {
+                case YES_REACTION -> performPermissionOverride(event, permissionService::setBasePermitsToUserWithCheck);
+                case NO_REACTION -> performPermissionOverride(event, permissionService::retiredChannelUserWithCheck);
             }
         }
+    }
+
+    private void performPermissionOverride(@NotNull GenericMessageReactionEvent event, BiConsumer<Member, GuildChannel> permission) {
+        var channel = event.retrieveMessage().complete().getMentions().getChannels().get(0);
+        permission.accept(event.getMember(), channel);
+        event.retrieveMessage().complete().removeReaction(event.getEmoji(), Objects.requireNonNull(event.getUser())).queue();
     }
 
     private void addReactionsOnChannelMessages(Message msg) {

@@ -45,7 +45,7 @@ public class PermissionService {
         this.userChannelRepository = userChannelRepository;
     }
 
-    public void setBasePermitsToUser(GuildChannel c, Member member) {
+    public void setBasePermitsToUser(Member member, GuildChannel c) {
         Set<GuildChannel> channelsSet = userChannelRepository.findById(c.getIdLong()).stream()
                 .map(ChannelsTable::getParentChannelId)
                 .filter(Objects::nonNull)
@@ -62,7 +62,7 @@ public class PermissionService {
         if (member.getPermissions(channel).contains(Permission.VIEW_CHANNEL)) {
             logger.info("User {} try to subscribe already subscribed channel {}", member, channel);
         } else if (userPriv.isEmpty() || userPriv.get().getPrivilege() != Utils.Privilege.BAN.getOffset()) {
-            this.setBasePermitsToUser(channel, member);
+            this.setBasePermitsToUser(member, channel);
         }
     }
 
@@ -90,7 +90,7 @@ public class PermissionService {
         channelUsersRepository.save(channelUser);
     }
 
-    public void banChannelForMember(GuildChannel c, Member member) {
+    public void banChannelForMember(Member member, GuildChannel c) {
         logger.info("User {} banned in channel {}", member, c);
         c.getPermissionContainer()
                 .upsertPermissionOverride(member)
@@ -106,7 +106,7 @@ public class PermissionService {
         channelUsersRepository.save(channelUser);
     }
 
-    public void removeAsModerator(TextChannel channel, Member member) {
+    public void removeAsModerator(Member member, GuildChannel channel) {
         logger.info("User {} removed moderator permits in channel {}", member, channel);
         channel.getPermissionContainer()
                 .upsertPermissionOverride(member)
@@ -114,7 +114,7 @@ public class PermissionService {
         channelUsersRepository.updatePrivilege(channel.getIdLong(), member.getIdLong(), USER.getOffset());
     }
 
-    public void setAsModerator(TextChannel channel, Member member) {
+    public void setAsModerator(Member member, GuildChannel channel) {
         channel.getPermissionContainer()
                 .upsertPermissionOverride(member)
                 .setPermissions(textChannelModeratorPermission, null).queue();
@@ -122,12 +122,17 @@ public class PermissionService {
         channelUsersRepository.updatePrivilege(channel.getIdLong(), member.getIdLong(), MODERATOR.getOffset());
     }
 
-    public void retiredChannelUser(GuildChannel newChannel, Member member) {
-        logger.info("Retired view to user {} for channel {}", member, newChannel);
-        newChannel.getPermissionContainer()
-                .upsertPermissionOverride(member)
-                .setPermissions(null, textChannelUserPermission).queue();
-        channelUsersRepository.deleteByUserIdAndChannelsTable_ChannelId(member.getIdLong(), newChannel.getIdLong());
+    public void retiredChannelUserWithCheck(Member member, GuildChannel channel) {
+        logger.info("Retired view to user {} for channel {}", member, channel);
+        var userPriv = channelUsersRepository.findByUserIdAndChannelsTable_ChannelId(member.getIdLong(), channel.getIdLong());
+        if (userPriv.isEmpty() || userPriv.get().getPrivilege() != Utils.Privilege.BAN.getOffset()) {
+            channel.getPermissionContainer()
+                    .upsertPermissionOverride(member)
+                    .setPermissions(null, textChannelUserPermission).queue();
+            channelUsersRepository.deleteByUserIdAndChannelsTable_ChannelId(member.getIdLong(), channel.getIdLong());
+        } else {
+            logger.info("User {} banned and can't retire permissions in {}", member, channel);
+        }
     }
 
     public void copyUserSubscriptions(Member recipient, Member donor) {

@@ -46,11 +46,11 @@ public class SpecialChannelLogic extends ListenerAdapter {
     private void setupChannel(ChannelUsersTable channelUsersTable, GuildMemberJoinEvent event) {
         switch (Utils.Privilege.getFromOffset(channelUsersTable.getPrivilege())) {
             case BAN -> permissionService
-                    .banChannelForMember(event.getGuild().getGuildChannelById(channelUsersTable.getChannelId()), event.getMember());
+                    .banChannelForMember(event.getMember(), event.getGuild().getGuildChannelById(channelUsersTable.getChannelId()));
             case USER -> permissionService
-                    .setBasePermitsToUser(event.getGuild().getGuildChannelById(channelUsersTable.getChannelId()), event.getMember());
+                    .setBasePermitsToUser(event.getMember(), event.getGuild().getGuildChannelById(channelUsersTable.getChannelId()));
             case MODERATOR -> permissionService
-                    .setAsModerator(Objects.requireNonNull(event.getGuild().getTextChannelById(channelUsersTable.getChannelId())), event.getMember());
+                    .setAsModerator(event.getMember(), Objects.requireNonNull(event.getGuild().getTextChannelById(channelUsersTable.getChannelId())));
             case OWNER, CHOSEN_ADMIN -> logger.error("OWNER or CHOSEN_ADMIN should not be saved");
         }
     }
@@ -129,13 +129,13 @@ public class SpecialChannelLogic extends ListenerAdapter {
     private void enableChannelForUser(MessageReceivedEvent event) {
         var channels = event.getMessage().getMentions().getChannels();
         var members = event.getMessage().getMentions().getMembers();
-        channels.forEach(c -> members.forEach(member -> permissionService.setBasePermitsToUser(c, member)));
+        channels.forEach(c -> members.forEach(member -> permissionService.setBasePermitsToUser(member, c)));
     }
 
     private void disableChannelForUser(MessageReceivedEvent event) {
         var channels = event.getMessage().getMentions().getChannels();
         var members = event.getMessage().getMentions().getMembers();
-        channels.forEach(c -> members.forEach(member -> permissionService.banChannelForMember(c, member)));
+        channels.forEach(c -> members.forEach(member -> permissionService.banChannelForMember(member, c)));
     }
 
 }

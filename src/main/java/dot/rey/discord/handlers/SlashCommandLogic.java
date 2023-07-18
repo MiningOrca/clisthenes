@@ -29,7 +29,7 @@ public class SlashCommandLogic extends ListenerAdapter {
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         switch (event.getName()) {
             case "leave_channel" -> {
-                permissionService.retiredChannelUser(event.getChannel().asTextChannel(), event.getMember());
+                permissionService.retiredChannelUserWithCheck(event.getMember(), event.getChannel().asTextChannel());
                 event.reply("Leaving").setEphemeral(true).queue();
             }
             case "spy_user" -> {
@@ -50,13 +50,13 @@ public class SlashCommandLogic extends ListenerAdapter {
             //todo add channel deletion for admin
             case "ban_user" -> {
                 logger.info("{} banned in channel {} by {}", event.getOption("name").getAsMember(), event.getChannel(), event.getMember());
-                permissionService.banChannelForMember(event.getChannel().asTextChannel(), event.getOption("name").getAsMember());
+                permissionService.banChannelForMember(event.getOption("name").getAsMember(), event.getChannel().asTextChannel());
                 event.reply(event.getOption("name").getAsMember() + " banned")
                         .setEphemeral(true).queue();
             }
             case "add_moderator" -> {
                 logger.info("{} set as moderator in channel {} by {}", event.getOption("name").getAsMember(), event.getChannel(), event.getMember());
-                permissionService.setAsModerator(event.getChannel().asTextChannel(), event.getOption("name").getAsMember());
+                permissionService.setAsModerator(event.getOption("name").getAsMember(), event.getChannel().asTextChannel());
                 event.reply(event.getOption("name").getAsMember() + " added as moderator")
                         .setEphemeral(true).queue();
             }
@@ -68,7 +68,7 @@ public class SlashCommandLogic extends ListenerAdapter {
             }
             case "remove_moderator" -> {
                 logger.info("{} removed from moderator in channel {} by {}", event.getOption("name").getAsMember(), event.getChannel(), event.getMember());
-                permissionService.removeAsModerator(event.getChannel().asTextChannel(), event.getOption("name").getAsMember());
+                permissionService.removeAsModerator(event.getOption("name").getAsMember(), event.getChannel().asTextChannel());
                 event.reply(event.getOption("name").getAsMember() + " retrieve moderator privileges")
                         .setEphemeral(true).queue();
             }
