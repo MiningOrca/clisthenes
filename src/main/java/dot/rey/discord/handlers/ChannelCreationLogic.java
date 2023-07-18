@@ -53,22 +53,30 @@ public class ChannelCreationLogic extends ListenerAdapter {
         var channelName = splitMsg[0];
         if (splitMsg.length < 2) {
             logger.info("Malformed message, need at least one \\n  " + event.getMessage().getContentRaw());
-            event.getChannel().sendMessage(event.getAuthor().getAsMention() + " please use '\\n' as setup").queue(m -> m.delete().queueAfter(100, TimeUnit.SECONDS));
+            event.getChannel()
+                    .sendMessage(event.getAuthor().getAsMention() + " please use '\\n' as setup")
+                    .queue(m -> m.delete().queueAfter(100, TimeUnit.SECONDS));
             event.getMessage().delete().queue();
             return;
         } else if (splitMsg.length > Message.MAX_CONTENT_LENGTH) {
             logger.info("Malformed message, too many symbols " + event.getMessage().getContentRaw());
-            event.getChannel().sendMessage(event.getAuthor().getAsMention() + " no more than " + Message.MAX_CONTENT_LENGTH + " symbols").queue(m -> m.delete().queueAfter(100, TimeUnit.SECONDS));
+            event.getChannel()
+                    .sendMessage(event.getAuthor().getAsMention() + " no more than " + Message.MAX_CONTENT_LENGTH + " symbols")
+                    .queue(m -> m.delete().queueAfter(100, TimeUnit.SECONDS));
             event.getMessage().delete().queue();
         } else if (splitMsg[0].contains("<#")) {
             logger.info("Malformed message, should not hava channel mentioned  " + event.getMessage().getContentRaw());
-            event.getChannel().sendMessage(event.getAuthor().getAsMention() + " please do not use another channel mentions as channel name, moron").queue(m -> m.delete().queueAfter(100, TimeUnit.SECONDS));
+            event.getChannel()
+                    .sendMessage(event.getAuthor().getAsMention() + " please do not use another channel mentions as channel name, moron")
+                    .queue(m -> m.delete().queueAfter(100, TimeUnit.SECONDS));
             event.getMessage().delete().queue();
             return;
         } else if (userChannelRepository.findAllByOwnerIdAndGuildMetaTable_GuildId(event.getAuthor().getIdLong(), event.getGuild().getIdLong()).size() >=
                 metaRepository.getChannelLimitByGuildId(event.getGuild().getIdLong())) {
             logger.info("User {} reached limit with channel creation", event.getMember());
-            event.getChannel().sendMessage(event.getAuthor().getAsMention() + " you're reached a limit with channel created").queue(m -> m.delete().queueAfter(100, TimeUnit.SECONDS));
+            event.getChannel()
+                    .sendMessage(event.getAuthor().getAsMention() + " you're reached a limit with channel created")
+                    .queue(m -> m.delete().queueAfter(100, TimeUnit.SECONDS));
             event.getMessage().delete().queue();
             return;
         }
