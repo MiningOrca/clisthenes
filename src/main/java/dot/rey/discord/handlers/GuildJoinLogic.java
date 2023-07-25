@@ -92,6 +92,9 @@ public class GuildJoinLogic extends ListenerAdapter {
                 Commands.slash("spy_user", "copy user subscription")
                         .addOption(OptionType.USER, "name", "username", true)
                         .setDefaultPermissions(enabledFor(Permission.VIEW_CHANNEL)),
+                Commands.slash("create_channel", "channel creation procedure")
+                        .addOption(OptionType.ATTACHMENT, "picture", "picture for you channel", false)
+                        .setDefaultPermissions(enabledFor(Permission.VIEW_CHANNEL)),
 //                Commands.slash("create_subchannel", "establish a group of channels based on this one")
 //                        .addOption(OptionType.STRING, "name", "new channel name", true)
 //                        .setDefaultPermissions(enabledFor(Permission.MANAGE_CHANNEL)),
@@ -135,6 +138,7 @@ public class GuildJoinLogic extends ListenerAdapter {
                 .map(user -> reaction.getGuild().retrieveMember(user).complete())
                 .filter(Objects::nonNull)
                 .forEach(member -> {
+                    logger.info("Found reaction {} for member {} on message {}", reaction, member, message);
                     permissionOverride.accept(member, message.getMentions().getChannels().get(0));
                     reaction.removeReaction(member.getUser()).complete();
                 });

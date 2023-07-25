@@ -17,11 +17,13 @@ public class SlashCommandLogic extends ListenerAdapter {
 
     private final PermissionService permissionService;
     private final ChannelUsersRepository channelUsersRepository;
+    private final ChannelCreationLogic creationLogic;
     private final Logger logger = LoggerFactory.getLogger(SlashCommandLogic.class);
 
-    public SlashCommandLogic(PermissionService permissionService, ChannelUsersRepository channelUsersRepository) {
+    public SlashCommandLogic(PermissionService permissionService, ChannelUsersRepository channelUsersRepository, ChannelCreationLogic creationLogic) {
         this.permissionService = permissionService;
         this.channelUsersRepository = channelUsersRepository;
+        this.creationLogic = creationLogic;
     }
 
 
@@ -77,6 +79,10 @@ public class SlashCommandLogic extends ListenerAdapter {
                 permissionService.cleanChannelOwnership(event.getOption("name").getAsMember());
                 event.reply(event.getOption("name").getAsMentionable().getAsMention() + " can now create one more channel")
                         .setEphemeral(true).queue();
+            }
+            case "create_channel" -> {
+                logger.info("User {} initiate channel creation with discord modal", event.getMember());
+                creationLogic.channelModal(event);
             }
         }
     }

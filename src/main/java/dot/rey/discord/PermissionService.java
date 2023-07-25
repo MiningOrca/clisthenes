@@ -153,10 +153,10 @@ public class PermissionService {
 
 
     public void saveNewChannelInDB(MessageReceivedEvent event, long channelId) {
-        insertToDB(event.getGuild().getIdLong(), event.getAuthor().getIdLong(), channelId);
+        insertNewChannelToDB(event.getGuild().getIdLong(), event.getAuthor().getIdLong(), channelId);
     }
 
-    private void insertToDB(long guildId, long authorId, long channelId) {
+    public void insertNewChannelToDB(long guildId, long authorId, long channelId) {
         logger.info("Create database entries for channel {}", channelId);
         GuildMetaTable guildMetaTable = metaRepository.findById(guildId).orElseThrow(() -> new NoSuchElementException("Can't found proper guild in database"));
         var userChannel = new ChannelsTable();
@@ -202,7 +202,7 @@ public class PermissionService {
                 .stream()
                 .filter(c -> c.getType() == ChannelType.TEXT)
                 .forEach(c -> {
-                    insertToDB(guild.getIdLong(), 0L, c.getIdLong());
+                    insertNewChannelToDB(guild.getIdLong(), 0L, c.getIdLong());
                     if (event.getOption("withPost") != null && event.getOption("withPost").getAsBoolean()) {
                         channel.sendMessage("Subscribe to ".concat(c.getName()).concat("\n").concat(c.getAsMention())).queue();
                     }
