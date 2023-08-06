@@ -132,16 +132,16 @@ public class GuildJoinLogic extends ListenerAdapter {
     }
 
     private void processReactions(Message message, MessageReaction reaction, BiConsumer<Member, GuildChannel> permissionOverride) {
-        reaction
-                .retrieveUsers().complete().stream()
+        reaction.retrieveUsers().queue(users -> users.stream()
                 .filter(u -> !u.isBot())
-                .map(user -> reaction.getGuild().retrieveMember(user).complete())
-                .filter(Objects::nonNull)
-                .forEach(member -> {
-                    logger.info("Found reaction {} for member {} on message {}", reaction, member, message);
-                    permissionOverride.accept(member, message.getMentions().getChannels().get(0));
-                    reaction.removeReaction(member.getUser()).complete();
-                });
+                .forEach(user ->
+                        reaction.getGuild().retrieveMember(user).queue(member -> {
+                            if (member != null) {
+                                logger.info("Found reaction {} for member {} on message {}", reaction, member, message);
+                                permissionOverride.accept(member, message.getMentions().getChannels().get(0));
+                                reaction.removeReaction(member.getUser()).queue();
+                            }
+                        })));
     }
 
     private void setupBanChannel(GenericGuildEvent event) {
